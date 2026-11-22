@@ -16,9 +16,15 @@ app.use(express.json());
 // Path to data and images
 const DATA_FILE = path.join(__dirname, '..', 'data', 'questions.json');
 const IMAGES_DIR = path.join(__dirname, '..', 'data', 'images');
+const CLIENT_DIST = path.join(__dirname, '..', 'client', 'dist');
 
 // Serve static question images
 app.use('/images', express.static(IMAGES_DIR));
+
+// Serve static frontend build if available (Production / Render)
+if (fs.existsSync(CLIENT_DIST)) {
+  app.use(express.static(CLIENT_DIST));
+}
 
 // Load questions into memory
 let questions = [];
@@ -334,6 +340,16 @@ app.post('/api/exam/submit', (req, res) => {
     details
   });
 });
+
+// SPA fallback for React router / frontend routes (Production / Render)
+if (fs.existsSync(CLIENT_DIST)) {
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/images')) {
+      return next();
+    }
+    res.sendFile(path.join(CLIENT_DIST, 'index.html'));
+  });
+}
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
