@@ -523,8 +523,14 @@ export default function ExamScreen({
                                 key={optNum}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setCurrentIndex(globalIdx);
-                                  handleToggleOption(optNum, q.id);
+                                  if (!isCurrent) {
+                                    // When clicking another question from the list, ONLY navigate to it!
+                                    // NEVER accidentally toggle or corrupt answers during navigation!
+                                    setCurrentIndex(globalIdx);
+                                  } else {
+                                    // Only toggle the checkbox if this question is already the active/current question
+                                    handleToggleOption(optNum, q.id);
+                                  }
                                 }}
                                 style={{
                                   display: 'flex',
