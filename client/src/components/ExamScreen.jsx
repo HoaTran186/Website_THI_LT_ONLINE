@@ -43,24 +43,26 @@ export default function ExamScreen({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Toggle option selection (supports multiple choices independently, like Cục Đường Bộ software)
-  const handleToggleOption = useCallback((optionNumber) => {
-    if (!currentQuestion) return;
+  // Select or toggle option cleanly (ensures 1 answer per question, smoothly switches without duplicates)
+  const handleSelectOption = useCallback((optionNumber, targetQId = null) => {
+    const qId = targetQId || currentQuestion?.id;
+    if (!qId) return;
+
     setAnswers(prev => {
-      const qId = currentQuestion.id;
       const currentSelected = prev[qId] || [];
-      let updated;
-      if (currentSelected.includes(optionNumber)) {
-        // Uncheck
-        updated = currentSelected.filter(n => n !== optionNumber);
+      // If user clicks the exact same option that is already selected, uncheck it (clear choice)
+      if (currentSelected.length === 1 && currentSelected[0] === optionNumber) {
+        return {
+          ...prev,
+          [qId]: []
+        };
       } else {
-        // Check (allows multiple selections)
-        updated = [...currentSelected, optionNumber].sort((a, b) => a - b);
+        // Choose this option (replaces previous choice cleanly so there are never unwanted duplicate answers)
+        return {
+          ...prev,
+          [qId]: [optionNumber]
+        };
       }
-      return {
-        ...prev,
-        [qId]: updated
-      };
     });
   }, [currentQuestion]);
 
@@ -74,7 +76,7 @@ export default function ExamScreen({
         e.preventDefault();
         const num = parseInt(e.key);
         if (currentQuestion && num <= (currentQuestion.options?.length || 4)) {
-          handleToggleOption(num);
+          handleSelectOption(num, currentQuestion.id);
         }
       } 
       // ArrowLeft (←): Move to column on the left (index - 15)
@@ -115,7 +117,7 @@ export default function ExamScreen({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentQuestion, questions.length, handleToggleOption]);
+  }, [currentQuestion, questions.length, handleSelectOption]);
 
   const handleFinish = (force = false) => {
     if (!force) {
@@ -231,7 +233,7 @@ export default function ExamScreen({
                   return (
                     <div
                       key={idx}
-                      onClick={() => handleToggleOption(optNum)}
+                      onClick={() => handleSelectOption(optNum, currentQuestion.id)}
                       style={{
                         fontSize: '17px',
                         lineHeight: 1.6,
@@ -524,7 +526,7 @@ export default function ExamScreen({
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setCurrentIndex(globalIdx);
-                                  handleToggleOption(optNum);
+                                  handleSelectOption(optNum, q.id);
                                 }}
                                 style={{
                                   display: 'flex',
