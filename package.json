@@ -1,0 +1,23 @@
+{
+  "name": "website-thi-ly-thuyet-gplx-online",
+  "version": "1.0.0",
+  "description": "Website ôn tập lý thuyết online và thi thử 600 câu hỏi GPLX mô phỏng phần mềm sát hạch Cục Đường Bộ Việt Nam",
+  "type": "module",
+  "scripts": {
+    "start": "node run.js",
+    "dev": "node run.js",
+    "server": "node server/server.js",
+    "client": "npm --prefix client run dev",
+    "build:client": "npm --prefix client run build"
+  },
+  "keywords": [
+    "gplx",
+    "600-cau-hoi-gplx",
+    "sat-hach-lai-xe",
+    "cuc-duong-bo",
+    "react",
+    "nodejs"
+  ],
+  "author": "",
+  "license": "ISC"
+}
