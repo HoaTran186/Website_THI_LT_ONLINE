@@ -43,26 +43,25 @@ export default function ExamScreen({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Select or toggle option cleanly (ensures 1 answer per question, smoothly switches without duplicates)
-  const handleSelectOption = useCallback((optionNumber, targetQId = null) => {
+  // Toggle option selection (supports multiple choices independently, like Cục Đường Bộ software)
+  const handleToggleOption = useCallback((optionNumber, targetQId = null) => {
     const qId = targetQId || currentQuestion?.id;
     if (!qId) return;
 
     setAnswers(prev => {
       const currentSelected = prev[qId] || [];
-      // If user clicks the exact same option that is already selected, uncheck it (clear choice)
-      if (currentSelected.length === 1 && currentSelected[0] === optionNumber) {
-        return {
-          ...prev,
-          [qId]: []
-        };
+      let updated;
+      if (currentSelected.includes(optionNumber)) {
+        // Uncheck
+        updated = currentSelected.filter(n => n !== optionNumber);
       } else {
-        // Choose this option (replaces previous choice cleanly so there are never unwanted duplicate answers)
-        return {
-          ...prev,
-          [qId]: [optionNumber]
-        };
+        // Check (allows multiple choices independently)
+        updated = [...currentSelected, optionNumber].sort((a, b) => a - b);
       }
+      return {
+        ...prev,
+        [qId]: updated
+      };
     });
   }, [currentQuestion]);
 
@@ -76,7 +75,7 @@ export default function ExamScreen({
         e.preventDefault();
         const num = parseInt(e.key);
         if (currentQuestion && num <= (currentQuestion.options?.length || 4)) {
-          handleSelectOption(num, currentQuestion.id);
+          handleToggleOption(num, currentQuestion.id);
         }
       } 
       // ArrowLeft (←): Move to column on the left (index - 15)
@@ -117,7 +116,7 @@ export default function ExamScreen({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentQuestion, questions.length, handleSelectOption]);
+  }, [currentQuestion, questions.length, handleToggleOption]);
 
   const handleFinish = (force = false) => {
     if (!force) {
@@ -233,7 +232,7 @@ export default function ExamScreen({
                   return (
                     <div
                       key={idx}
-                      onClick={() => handleSelectOption(optNum, currentQuestion.id)}
+                      onClick={() => handleToggleOption(optNum, currentQuestion.id)}
                       style={{
                         fontSize: '17px',
                         lineHeight: 1.6,
@@ -470,11 +469,10 @@ export default function ExamScreen({
                 <div 
                   key={colIdx} 
                   style={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
+                    display: 'grid', 
+                    gridTemplateRows: 'repeat(15, 1fr)', 
                     gap: '2px', 
-                    height: '100%',
-                    justifyContent: 'flex-start'
+                    height: '100%'
                   }}
                 >
                   {column.map((q, idxInCol) => {
@@ -495,7 +493,7 @@ export default function ExamScreen({
                         style={{
                           background: rowBg,
                           border: isCurrent ? '1px solid #cc0000' : '1px solid #cbd5e1',
-                          flex: '1 1 0',
+                          height: '100%',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
@@ -526,7 +524,7 @@ export default function ExamScreen({
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setCurrentIndex(globalIdx);
-                                  handleSelectOption(optNum, q.id);
+                                  handleToggleOption(optNum, q.id);
                                 }}
                                 style={{
                                   display: 'flex',
