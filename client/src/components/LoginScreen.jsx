@@ -51,15 +51,10 @@ export default function LoginScreen({ onStartExam, onReviewLastExam, hasPrevious
     });
   };
 
-  // Bước 3: Vào thi
+  // Bước 3: Vào thi (chỉ cho phép khi đã nhấn kiểm tra thông tin thí sinh)
   const handleEnterExam = () => {
     if (!checkedInfo) {
-      const sbdNum = parseInt(sbdInput);
-      if (isNaN(sbdNum) || sbdNum <= 0) {
-        setErrorMsg('Vui lòng nhập số báo danh và kiểm tra thông tin!');
-        return;
-      }
-      handleCheckInfo();
+      setErrorMsg('Vui lòng nhấn "Kiểm tra thông tin thí sinh" trước khi vào thi!');
       return;
     }
 
@@ -407,29 +402,35 @@ export default function LoginScreen({ onStartExam, onReviewLastExam, hasPrevious
           justifyContent: 'center',
           gap: '14px'
         }}>
-          {/* Nút 1: Vào tập luyện (VÀO THI) */}
+          {/* Nút 1: Vào tập luyện (VÀO THI) - Khóa khi chưa kiểm tra thông tin */}
           <button
             type="button"
             onClick={handleEnterExam}
+            disabled={!checkedInfo}
             style={{
               padding: '9px 28px',
-              background: 'linear-gradient(180deg, #fff3e6 0%, #fbd5b5 100%)',
-              border: '1px solid #d99b66',
+              background: checkedInfo
+                ? 'linear-gradient(180deg, #fff3e6 0%, #fbd5b5 100%)'
+                : 'linear-gradient(180deg, #e4e4e4 0%, #d0d0d0 100%)',
+              border: checkedInfo ? '1px solid #d99b66' : '1px solid #ababab',
               borderRadius: '3px',
-              color: '#662200',
+              color: checkedInfo ? '#662200' : '#888888',
               fontWeight: 800,
               fontSize: '14px',
-              cursor: 'pointer',
+              cursor: checkedInfo ? 'pointer' : 'not-allowed',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8), 0 2px 4px rgba(0,0,0,0.12)'
+              boxShadow: checkedInfo ? 'inset 0 1px 0 rgba(255,255,255,0.8), 0 2px 4px rgba(0,0,0,0.12)' : 'none',
+              opacity: checkedInfo ? 1 : 0.6,
+              transition: 'all 0.2s ease'
             }}
+            title={checkedInfo ? 'Nhấn để vào làm bài thi' : 'Vui lòng nhấn "Kiểm tra thông tin thí sinh" trước khi vào thi'}
           >
             <span style={{
               width: '12px',
               height: '12px',
-              background: '#ffffff',
+              background: checkedInfo ? '#ffffff' : '#ccc',
               border: '1px solid #999',
               display: 'inline-block'
             }} />
